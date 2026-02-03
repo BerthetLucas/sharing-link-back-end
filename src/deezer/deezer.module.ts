@@ -4,7 +4,12 @@ import { DeezerService } from './deezer.service';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [HttpModule],
+  imports: [
+    HttpModule.register({
+      timeout: 10_000,
+      maxRedirects: 5,
+    }),
+  ],
   controllers: [DeezerController],
   providers: [DeezerService],
 })
