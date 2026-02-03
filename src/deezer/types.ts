@@ -4,7 +4,19 @@ export interface DeezerQuery {
   track: string;
 }
 
-export interface DeezerSongResponse {
+export interface DeezerSongInfoResponse {
   message: string;
-  data: unknown;
+  data: {
+    artist: string;
+    album: string;
+    track: string;
+  };
+}
+
+export interface DeezerSongLinkAndCoverResponse {
+  message: string;
+  data: {
+    link: string;
+    cover: string;
+  };
 }

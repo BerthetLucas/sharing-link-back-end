@@ -1,16 +1,23 @@
-import { BadRequestException, Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Query, Param } from '@nestjs/common';
 import { DeezerService } from './deezer.service';
-import type { DeezerQuery, DeezerSongResponse } from './types';
+import type { DeezerQuery, DeezerSongInfoResponse, DeezerSongLinkAndCoverResponse } from './types';
 
 @Controller('deezer')
 export class DeezerController {
   constructor(private deezerService: DeezerService) {}
 
-  @Get()
+  @Get('/search')
   @HttpCode(HttpStatus.OK)
-  async getDeezerSong(@Query() query: DeezerQuery): Promise<DeezerSongResponse> {
+  async getDeezerSong(
+    @Query() query: DeezerQuery,
+  ): Promise<DeezerSongLinkAndCoverResponse | HttpStatus> {
     const { artist, album, track } = query;
-    const data: unknown = await this.deezerService.searchDeezerSongByMetaData(artist, album, track);
+    const data = await this.deezerService.searchDeezerSongByMetaData(artist, album, track);
+
+    if (!data) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
     return {
       message: 'found',
       data,
@@ -19,13 +26,30 @@ export class DeezerController {
 
   @Get('/url')
   @HttpCode(HttpStatus.OK)
-  async getDeezerId(@Query('url') url: string): Promise<{ message: string; data: unknown }> {
-    if (!url?.trim()) {
-      throw new BadRequestException(
-        'Paramètre "url" requis. Exemple : /deezer/url?url=https://link.deezer.com/s/xxx',
-      );
-    }
+  async getDeezerId(
+    @Query('url') url: string,
+  ): Promise<{ message: string; data?: string } | HttpStatus> {
     const data = await this.deezerService.getDeezerSongId(url);
+
+    if (!data) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    return {
+      message: 'found',
+      data,
+    };
+  }
+
+  @Get('id/:id')
+  @HttpCode(HttpStatus.OK)
+  async getDeezerSongById(@Param('id') id: string): Promise<DeezerSongInfoResponse | HttpStatus> {
+    const data = await this.deezerService.getDeezerSongById(id);
+
+    if (!data) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
     return {
       message: 'found',
       data,
