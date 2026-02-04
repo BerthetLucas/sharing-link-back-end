@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpCode, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
