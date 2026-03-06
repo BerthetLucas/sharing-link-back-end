@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
+import type { DeezerApiSearchResponse, DeezerApiTrackResponse } from './types';
 
 @Injectable()
 export class DeezerService {
@@ -17,18 +18,18 @@ export class DeezerService {
 
     try {
       const response = await lastValueFrom(
-        this.httpService.get('https://api.deezer.com/search', {
+        this.httpService.get<DeezerApiSearchResponse>('https://api.deezer.com/search', {
           params: { q: query },
         }),
       );
 
-      const results = response.data?.data;
-      if (!results?.length) {
+      const results = response.data.data;
+      if (!results.length) {
         throw new BadRequestException('Song not found');
       }
 
-      const link = results[0].link as string;
-      const cover = results[0].album.cover_big as string;
+      const link = results[0].link;
+      const cover = results[0].album.cover_big;
 
       return { link, cover };
     } catch (error) {
@@ -40,8 +41,8 @@ export class DeezerService {
 
   async getDeezerSongId(url: string): Promise<string> {
     try {
-      const response = await lastValueFrom(this.httpService.get(url));
-      const html = response.data as string;
+      const response = await lastValueFrom(this.httpService.get<string>(url));
+      const html = response.data;
 
       const match = /https:\/\/www\.deezer\.com\/[a-z]{2}\/track\/(\d+)/i.exec(html);
       if (!match) {
@@ -59,16 +60,16 @@ export class DeezerService {
   async getDeezerSongById(id: string): Promise<{ album: string; artist: string; track: string }> {
     try {
       const response = await lastValueFrom(
-        this.httpService.get(`https://api.deezer.com/track/${id}`),
+        this.httpService.get<DeezerApiTrackResponse>(`https://api.deezer.com/track/${id}`),
       );
 
-      if (!response.data?.title) {
+      if (!response.data.title) {
         throw new BadRequestException('Track not found');
       }
 
-      const track = response.data.title as string;
-      const album = response.data.album.title as string;
-      const artist = response.data.artist.name as string;
+      const track = response.data.title;
+      const album = response.data.album.title;
+      const artist = response.data.artist.name;
 
       return { album, artist, track };
     } catch (error) {

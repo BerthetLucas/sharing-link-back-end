@@ -12,7 +12,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Sharing Link API')
-    .setDescription('API pour interagir avec Deezer : recherche, extraction d\'ID et métadonnées')
+    .setDescription("API pour interagir avec Deezer : recherche, extraction d'ID et métadonnées")
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
@@ -21,4 +21,4 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
 }
-bootstrap();
+void bootstrap();

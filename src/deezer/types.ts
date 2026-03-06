@@ -4,6 +4,24 @@ export interface DeezerQuery {
   track: string;
 }
 
+// Deezer API internal response shapes
+export interface DeezerApiTrack {
+  link: string;
+  title: string;
+  album: { title: string; cover_big: string };
+  artist: { name: string };
+}
+
+export interface DeezerApiSearchResponse {
+  data: DeezerApiTrack[];
+}
+
+export interface DeezerApiTrackResponse {
+  title: string;
+  album: { title: string };
+  artist: { name: string };
+}
+
 export interface DeezerSongInfoResponse {
   message: string;
   data: {
