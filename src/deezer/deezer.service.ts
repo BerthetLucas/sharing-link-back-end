@@ -1,9 +1,11 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class DeezerService {
+  private readonly logger = new Logger(DeezerService.name);
+
   constructor(private readonly httpService: HttpService) {}
 
   async searchDeezerSongByMetaData(
@@ -13,38 +15,66 @@ export class DeezerService {
   ): Promise<{ link: string; cover: string }> {
     const query = `artist:"${artist}" album:"${album}" track:"${track}"`;
 
-    const response = await lastValueFrom(
-      this.httpService.get('https://api.deezer.com/search', {
-        params: { q: query },
-      }),
-    );
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get('https://api.deezer.com/search', {
+          params: { q: query },
+        }),
+      );
 
-    const link = response.data.data[0].link as string;
-    const cover = response.data.data[0].album.cover_big as string;
+      const results = response.data?.data;
+      if (!results?.length) {
+        throw new BadRequestException('Song not found');
+      }
 
-    return { link, cover };
+      const link = results[0].link as string;
+      const cover = results[0].album.cover_big as string;
+
+      return { link, cover };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Deezer search API error', error);
+      throw new BadRequestException('Deezer API error');
+    }
   }
 
-  async getDeezerSongId(url: string): Promise<string | undefined> {
-    const response = await lastValueFrom(this.httpService.get(`${url}`));
+  async getDeezerSongId(url: string): Promise<string> {
+    try {
+      const response = await lastValueFrom(this.httpService.get(url));
+      const html = response.data as string;
 
-    const html = response.data as string;
+      const match = /https:\/\/www\.deezer\.com\/[a-z]{2}\/track\/(\d+)/i.exec(html);
+      if (!match) {
+        throw new BadRequestException('Could not extract Deezer ID from URL');
+      }
 
-    const identifyLink = /https:\/\/www\.deezer\.com\/fr\/track\/\d+/i.exec(html);
-    const deezerId: string | undefined = identifyLink ? identifyLink[0].split('/').pop() : '';
-
-    return deezerId;
+      return match[1];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Deezer URL fetch error', error);
+      throw new BadRequestException('Failed to fetch URL');
+    }
   }
 
   async getDeezerSongById(id: string): Promise<{ album: string; artist: string; track: string }> {
-    const response = await lastValueFrom(
-      this.httpService.get(`https://api.deezer.com/track/${id}`),
-    );
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(`https://api.deezer.com/track/${id}`),
+      );
 
-    const track = response.data.title as string;
-    const album = response.data.album.title as string;
-    const artist = response.data.artist.name as string;
+      if (!response.data?.title) {
+        throw new BadRequestException('Track not found');
+      }
 
-    return { album, artist, track };
+      const track = response.data.title as string;
+      const album = response.data.album.title as string;
+      const artist = response.data.artist.name as string;
+
+      return { album, artist, track };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Deezer track API error', error);
+      throw new BadRequestException('Deezer API error');
+    }
   }
 }
