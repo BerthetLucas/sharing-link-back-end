@@ -4,7 +4,6 @@ export interface DeezerQuery {
   track: string;
 }
 
-// Deezer API internal response shapes
 export interface DeezerApiTrack {
   link: string;
   title: string;
