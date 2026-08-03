@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DeezerModule } from './deezer/deezer.module';
+import { SongLinkModule } from './songlink/songlink.module';
 
 @Module({
-  imports: [DeezerModule],
+  imports: [SongLinkModule],
   controllers: [AppController],
   providers: [AppService],
 })
