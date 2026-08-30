@@ -12,7 +12,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Sharing Link API')
-    .setDescription("API pour interagir avec Deezer : recherche, extraction d'ID et métadonnées")
+    .setDescription(
+      'API qui résout un lien de partage de streaming musical (Spotify, Deezer, etc.) en liens équivalents pour toutes les plateformes, via Songlink/Odesli',
+    )
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
