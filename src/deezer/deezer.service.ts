@@ -14,7 +14,7 @@ export class DeezerService {
     album: string,
     track: string,
   ): Promise<{ link: string; cover: string }> {
-    const query = `artist:"${artist}" album:"${album}" track:"${track}"`;
+    const query = `artist:${artist} album:${album} track:"${track}"`;
 
     try {
       const response = await lastValueFrom(
